@@ -1,0 +1,1 @@
+# Galle 18K – Pagaré (rediseño estilo Zapsign)\n\nLanding + formulario /pagare.html (modo Acreedor).\nCorreo incluye monto en asunto y adjunta metadata.json.\n
