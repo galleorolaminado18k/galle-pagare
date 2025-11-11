@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pagaré Virtual – Galle 18K</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+    :root { --gold:#d4af37; }
+    body{ background: radial-gradient(1200px 800px at 10% 10%, #131313 0, #0b0b0b 40%, #060606 100%); color:#f2f2f2 }
+    .lux-card{ border:1px solid rgba(212,175,55,.25); border-radius:1rem; box-shadow:0 12px 28px rgba(0,0,0,.45) }
+    .gold{ color:var(--gold) }
+    .btn-gold{ background:linear-gradient(90deg,#cc9f2b,#e6c65b); color:#111; font-weight:700 }
+    .btn-gold:hover{ filter:brightness(1.05) }
+    canvas.signature{ border:1px dashed rgba(212,175,55,.5); border-radius:.75rem; background:#111 }
+    .invalid{ outline:2px solid #ef4444 !important }
+    video.cam{ background:#000; border-radius:.75rem; width:100%; height:260px; object-fit:cover }
+    img.preview{ background:#111; border-radius:.75rem; width:100%; height:260px; object-fit:contain }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="max-w-6xl mx-auto px-4 pt-8 pb-4">
+    <h1 class="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3"><span class="gold">●</span> Pagaré Virtual – <span class="gold">Galle 18K</span></h1>
+    <p class="text-sm text-gray-300 mt-2">Complete, firme, capture <b>selfie</b> y <b>documento (frente y reverso)</b>. Se envía al correo del deudor y a <b>galleaprobaciones@gmail.com</b>.</p>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 pb-16 space-y-8">
+    <section class="lux-card p-6 md:p-8">
+      <h2 class="text-xl font-semibold mb-6">1) Datos</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-semibold mb-3">Acreedor</h3>
+          <label class="block text-sm mb-1">Nombre / Razón social</label>
+          <input id="acreedor" class="w-full rounded-xl bg-black/40 px-3 py-2" value="Galle Oro Laminado 18K" />
+          <label class="block text-sm mt-4 mb-1">NIT / Documento</label>
+          <input id="acreedorDoc" class="w-full rounded-xl bg-black/40 px-3 py-2" placeholder="NIT o CC" />
+          <label class="block text-sm mt-4 mb-1">Ciudad de pago</label>
+          <input id="ciudadPago" class="w-full rounded-xl bg-black/40 px-3 py-2" placeholder="Cúcuta (Norte de Santander)" />
+        </div>
+        <div>
+          <h3 class="font-semibold mb-3">Deudor</h3>
+          <label class="block text-sm mb-1">Nombre completo</label>
+          <input id="deudor" class="w-full rounded-xl bg-black/40 px-3 py-2" placeholder="Nombre del deudor" />
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm mt-4 mb-1">Documento</label>
+              <input id="deudorDoc" class="w-full rounded-xl bg-black/40 px-3 py-2" placeholder="CC / CE / NIT" />
+            </div>
+            <div>
+              <label class="block text-sm mt-4 mb-1">Teléfono</label>
+              <input id="deudorTel" class="w-full rounded-xl bg-black/40 px-3 py-2" placeholder="WhatsApp" />
+            </div>
+          </div>
+          <label class="block text-sm mt-4 mb-1">Email (recibe el PDF)</label>
+          <input id="deudorEmail" type="email" class="w-full rounded-xl bg-black/40 px-3 py-2" placeholder="correo@dominio.com" />
+          <label class="block text-sm mt-4 mb-1">Dirección</label>
+          <input id="deudorDir" class="w-full rounded-xl bg-black/40 px-3 py-2" placeholder="Dirección completa" />
+        </div>
+      </div>
+      <hr class="my-6 border-gray-700/60" />
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-semibold mb-3">Condiciones</h3>
+          <label class="block text-sm mb-1">Valor del pagaré (COP)</label>
+          <input id="monto" type="number" min="1000" step="1000" class="w-full rounded-xl bg-black/40 px-3 py-2" placeholder="250000" />
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm mt-4 mb-1">Fecha de emisión</label>
+              <input id="fechaEmision" type="date" class="w-full rounded-xl bg-black/40 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm mt-4 mb-1">Fecha de vencimiento</label>
+              <input id="fechaVenc" type="date" class="w-full rounded-xl bg-black/40 px-3 py-2" />
+            </div>
+          </div>
+          <label class="block text-sm mt-4 mb-1">Número de pagaré</label>
+          <input id="numeroPagare" class="w-full rounded-xl bg-black/40 px-3 py-2" />
+          <p class="text-xs text-gray-300 mt-3">Pagaré <b>sin intereses</b>. En mora aplica bloqueo/reducción de cupo según política.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-3">Firma electrónica</h3>
+          <canvas id="firma" class="signature w-full h-48"></canvas>
+          <div class="flex items-center gap-2 mt-2">
+            <button id="btnBorrar" type="button" class="px-3 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700">Borrar firma</button>
+            <label class="text-xs text-gray-300">Firme con el dedo (móvil) o mouse (PC).</label>
+          </div>
+          <label class="block text-sm mt-6 mb-1">Aceptaciones</label>
+          <div class="space-y-2 text-sm">
+            <label class="flex items-start gap-2"><input id="chkDatos" type="checkbox" class="mt-1"> <span>Autorizo captura y uso de mi imagen y documento para verificación de identidad y gestión de cartera (Ley 1581 de 2012).</span></label>
+            <label class="flex items-start gap-2"><input id="chkPagare" type="checkbox" class="mt-1"> <span>Acepto y firmo electrónicamente este pagaré en los términos indicados.</span></label>
+            <label class="flex items-start gap-2"><input id="chkAutoEmail" type="checkbox" class="mt-1" checked> <span>Enviar PDF al correo del deudor y a <b>galleaprobaciones@gmail.com</b>.</span></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lux-card p-6 md:p-8">
+      <h2 class="text-xl font-semibold mb-2">2) Verificación de identidad</h2>
+      <p class="text-sm text-gray-300 mb-4">Por favor <b>sin gorra, gafas ni tapabocas</b>. Fondo claro y buena luz.</p>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="md:col-span-1">
+          <h3 class="font-semibold mb-2">Cámara</h3>
+          <video id="cam" class="cam" playsinline autoplay muted></video>
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <button id="startUser" type="button" class="px-3 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700">Activar frontal</button>
+            <button id="startEnv" type="button" class="px-3 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700">Activar posterior</button>
+          </div>
+          <p id="camMsg" class="text-xs text-gray-400 mt-2"></p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-2">Selfie del deudor</h3>
+          <img id="selfiePrev" class="preview" alt="Selfie" />
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <button id="capSelfie" type="button" class="px-3 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700">Capturar selfie</button>
+            <label class="px-3 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700 text-center cursor-pointer">Subir
+              <input id="fileSelfie" type="file" accept="image/*" capture="user" class="hidden" />
+            </label>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Mire al frente. Sin gorra ni lentes.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-2">Documento (frente y reverso)</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <img id="docFrontPrev" class="preview" alt="Documento anverso" />
+              <div class="grid grid-cols-2 gap-2 mt-2">
+                <button id="capDocFront" type="button" class="px-3 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700">Capturar frente</button>
+                <label class="px-3 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700 text-center cursor-pointer">Subir
+                  <input id="fileDocFront" type="file" accept="image/*" capture="environment" class="hidden" />
+                </label>
+              </div>
+            </div>
+            <div>
+              <img id="docBackPrev" class="preview" alt="Documento reverso" />
+              <div class="grid grid-cols-2 gap-2 mt-2">
+                <button id="capDocBack" type="button" class="px-3 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700">Capturar reverso</button>
+                <label class="px-3 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700 text-center cursor-pointer">Subir
+                  <input id="fileDocBack" type="file" accept="image/*" capture="environment" class="hidden" />
+                </label>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Asegure que los datos estén <b>legibles</b>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lux-card p-6 md:p-8">
+      <h2 class="text-xl font-semibold mb-4">3) Previsualización y envío</h2>
+      <div id="preview" class="hidden">
+        <div id="doc" class="prose prose-invert max-w-none">
+          <h3 class="text-2xl font-bold mb-2">PAGARÉ</h3>
+          <p class="text-sm text-gray-300 mb-4">Número: <span id="p-num"></span> · Ciudad de pago: <span id="p-ciudad"></span></p>
+          <p style="white-space:pre-wrap" id="p-cuerpo" class="leading-7"></p>
+          <div class="grid md:grid-cols-2 gap-6 mt-6">
+            <div>
+              <p class="text-sm text-gray-300">Deudor</p>
+              <p id="p-deudor" class="font-semibold"></p>
+              <p id="p-deudor-doc"></p>
+              <p id="p-deudor-dir"></p>
+              <p id="p-deudor-contacto" class="text-sm text-gray-300"></p>
+              <p class="text-sm text-gray-300 mt-2">Firma:</p>
+              <img id="p-firma" alt="Firma" class="w-64 h-24 object-contain bg-white/5 rounded" />
+            </div>
+            <div>
+              <p class="text-sm text-gray-300">Acreedor</p>
+              <p id="p-acreedor2" class="font-semibold"></p>
+              <p id="p-acreedor-doc" class="text-sm"></p>
+              <p class="text-sm text-gray-300 mt-4">Lugar y fecha de pago</p>
+              <p class="font-semibold"><span id="p-lugar"></span>, <span id="p-fecha-venc"></span></p>
+              <p class="text-sm mt-2">Valor: <span id="p-monto"></span> (<span id="p-monto-letras"></span>).</p>
+            </div>
+          </div>
+          <h4 class="text-lg font-semibold mt-6">Anexos de verificación</h4>
+          <div class="grid md:grid-cols-3 gap-4">
+            <div><p class="text-xs text-gray-400">Selfie</p><img id="p-selfie" class="preview" /></div>
+            <div><p class="text-xs text-gray-400">Documento (frente)</p><img id="p-doc-front" class="preview" /></div>
+            <div><p class="text-xs text-gray-400">Documento (reverso)</p><img id="p-doc-back" class="preview" /></div>
+          </div>
+          <p class="text-xs text-gray-400 mt-6">Plantilla referencial. No es asesoría legal. Sugerimos revisión jurídica.</p>
+        </div>
+      </div>
+      <div class="mt-6 flex flex-wrap items-center gap-3">
+        <button id="btnPreview" class="btn-gold rounded-xl px-4 py-2">Previsualizar</button>
+        <button id="btnPDF" class="rounded-xl px-4 py-2 bg-white/10 hover:bg-white/20 font-semibold">Firmar, descargar y enviar</button>
+        <button id="btnGuardar" class="rounded-xl px-4 py-2 bg-white/10 hover:bg-white/20">Guardar borrador</button>
+        <span id="msg" class="text-sm text-gray-300"></span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $$ = (id) => document.getElementById(id);
+    const todayISO = () => new Date().toISOString().slice(0,10);
+    const addDaysISO = (iso, days) => { const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); };
+    const currencyCOP = (v) => new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 }).format(v||0);
+    const numeroALetras = (n) => { n=Number(n); if(!isFinite(n)) return ''; const u=['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve']; const e=['diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve']; const d=['','diez','veinte','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa']; const c=['','ciento','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos']; const tT=(x)=>x<10?u[x]:x<20?e[x-10]:x<30?(x===20?'veinte':'veinti'+u[x-20]):(d[Math.floor(x/10)]+(x%10?' y '+u[x%10]:'')); const tH=(x)=>x===100?'cien':(c[Math.floor(x/100)]+(x%100?' ':'')+(x%100?tT(x%100):'')); const tTh=(x)=>x<1000?tH(x):((Math.floor(x/1000)===1?'mil':tH(Math.floor(x/1000))+' mil')+(x%1000?' '+tH(x%1000):'')); const tM=(x)=>x<1e6?tTh(x):((Math.floor(x/1e6)===1?'un millón':tH(Math.floor(x/1e6))+' millones')+(x%1e6?' '+tTh(x%1e6):'')); const ent=Math.floor(n); const cent=Math.round((n-ent)*100); return (tM(ent)||'cero')+' pesos'+(cent?' con '+tT(cent)+' centavos':''); };
+
+    // Firma
+    const canvas=$$('firma'); const ctx=canvas.getContext('2d'); let drawing=false,lastX=0,lastY=0,hasStroke=false;
+    const resizeCanvas=()=>{ const ratio=window.devicePixelRatio||1; canvas.width=canvas.clientWidth*ratio; canvas.height=canvas.clientHeight*ratio; ctx.setTransform(ratio,0,0,ratio,0,0); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#f5f5f5'; ctx.clearRect(0,0,canvas.width,canvas.height); hasStroke=false; };
+    const pos=(e)=>{ const r=canvas.getBoundingClientRect(); const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left; const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top; return {x,y}; };
+    const start=(e)=>{ drawing=true; const p=pos(e); lastX=p.x; lastY=p.y; };
+    const move=(e)=>{ if(!drawing) return; const p=pos(e); ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.x,p.y); ctx.stroke(); lastX=p.x; lastY=p.y; hasStroke=true; e.preventDefault(); };
+    const end=()=>{ drawing=false; };
+    window.addEventListener('resize', resizeCanvas);
+    canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); canvas.addEventListener('mouseup', end); canvas.addEventListener('mouseleave', end);
+    canvas.addEventListener('touchstart', start, {passive:false}); canvas.addEventListener('touchmove', move, {passive:false}); canvas.addEventListener('touchend', end);
+    $$('#btnBorrar').addEventListener('click', resizeCanvas);
+
+    // Cámara
+    const cam=$$('cam'); let stream=null; const selfiePrev=$$('selfiePrev'); const docFrontPrev=$$('docFrontPrev'); const docBackPrev=$$('docBackPrev'); let selfieData=null, docFrontData=null, docBackData=null;
+    async function startCamera(facing){ try{ if(stream){ stream.getTracks().forEach(t=>t.stop()); } stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio:false }); cam.srcObject=stream; $$('#camMsg').textContent='Cámara activa ('+(facing==='user'?'frontal':'posterior')+')'; } catch(e){ $$('#camMsg').textContent='No se pudo activar la cámara. Usa "Subir".'; console.error(e); } }
+    function captureTo(imgEl){ if(!stream){ $$('#camMsg').textContent='Activa la cámara primero.'; return; } const v=cam; const cn=document.createElement('canvas'); cn.width=v.videoWidth; cn.height=v.videoHeight; const c2=cn.getContext('2d'); c2.drawImage(v,0,0,cn.width,cn.height); const data=cn.toDataURL('image/jpeg',0.9); imgEl.src=data; return data; }
+    function fileToDataUrl(file, targetImg, setter){ const r=new FileReader(); r.onload=()=>{ targetImg.src=r.result; setter(r.result); }; r.readAsDataURL(file); }
+
+    $$('#startUser').addEventListener('click', ()=> startCamera('user'));
+    $$('#startEnv').addEventListener('click', ()=> startCamera('environment'));
+    $$('#capSelfie').addEventListener('click', ()=> { selfieData = captureTo(selfiePrev); });
+    $$('#capDocFront').addEventListener('click', ()=> { docFrontData = captureTo(docFrontPrev); });
+    $$('#capDocBack').addEventListener('click', ()=> { docBackData = captureTo(docBackPrev); });
+
+    $$('#fileSelfie').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) fileToDataUrl(f, selfiePrev, d=>selfieData=d); });
+    $$('#fileDocFront').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) fileToDataUrl(f, docFrontPrev, d=>docFrontData=d); });
+    $$('#fileDocBack').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) fileToDataUrl(f, docBackPrev, d=>docBackData=d); });
+
+    // Inicial
+    const init=()=>{ resizeCanvas(); $$('#fechaEmision').value=todayISO(); $$('#fechaVenc').value=addDaysISO(todayISO(),14); $$('#numeroPagare').value='PG-'+new Date().toISOString().replace(/[-:T.Z]/g,'').slice(0,14); };
+    init();
+
+    // Validación y preview
+    const req=['acreedor','ciudadPago','deudor','deudorDoc','monto','fechaEmision','fechaVenc','numeroPagare','deudorEmail'];
+    const limpiarInvalid=()=> req.concat(['deudorTel','deudorDir','acreedorDoc']).forEach(id=> $$('#'+id).classList.remove('invalid'));
+    const validar=()=>{
+      limpiarInvalid(); let ok=true; let c={};
+      req.forEach(id=>{ const v=$$('#'+id).value.trim(); if(!v){ $$('#'+id).classList.add('invalid'); ok=false; } c[id]=v; });
+      if(!$$('chkDatos').checked){ ok=false; alert('Debes autorizar tratamiento de datos e imágenes.'); }
+      if(!$$('chkPagare').checked){ ok=false; alert('Debes aceptar y firmar el pagaré.'); }
+      if(!hasStroke){ ok=false; alert('Debes dibujar tu firma.'); }
+      if(!selfieData){ ok=false; alert('Falta la selfie del deudor.'); }
+      if(!docFrontData){ ok=false; alert('Falta la foto del documento (frente).'); }
+      if(!docBackData){ ok=false; alert('Falta la foto del documento (reverso).'); }
+      c['deudorTel']=$$('#deudorTel').value.trim(); c['deudorDir']=$$('#deudorDir').value.trim(); c['acreedorDoc']=$$('#acreedorDoc').value.trim(); c['ciudadPago']=$$('#ciudadPago').value.trim(); c['selfie']=selfieData; c['docFront']=docFrontData; c['docBack']=docBackData; return ok? c : null;
+    };
+
+    const fillPreview=(c)=>{
+      $$('#p-num').textContent=c.numeroPagare; $$('#p-ciudad').textContent=c.ciudadPago; $$('#p-deudor').textContent=c.deudor; $$('#p-deudor-doc').textContent='Doc: '+c.deudorDoc; $$('#p-deudor-dir').textContent=(c.deudorDir?('Dir: '+c.deudorDir):''); $$('#p-deudor-contacto').textContent=[c.deudorTel,c.deudorEmail].filter(Boolean).join(' · '); $$('#p-acreedor2').textContent=c.acreedor; $$('#p-acreedor-doc').textContent=(c.acreedorDoc?('NIT/Doc: '+c.acreedorDoc):''); $$('#p-lugar').textContent=c.ciudadPago; $$('#p-fecha-venc').textContent=new Date(c.fechaVenc).toLocaleDateString('es-CO'); $$('#p-monto').textContent=currencyCOP(c.monto); $$('#p-monto-letras').textContent=numeroALetras(c.monto); $$('#p-firma').src=canvas.toDataURL('image/png');
+      const texto=`Yo, ${c.deudor} identificado con ${c.deudorDoc}, me obligo a pagar incondicionalmente a la orden de ${c.acreedor} la suma de ${numeroALetras(c.monto)} (${currencyCOP(c.monto)}), el día ${new Date(c.fechaVenc).toLocaleDateString('es-CO')} en ${c.ciudadPago}.
+
+Este pagaré se emite sin intereses. En caso de incumplimiento, el acreedor podrá aplicar medidas operativas internas sobre el cupo de crédito (bloqueo temporal, reducción o suspensión) hasta tanto se normalice el pago.`;
+      $$('#p-cuerpo').textContent=texto; $$('#p-selfie').src=c.selfie; $$('#p-doc-front').src=c.docFront; $$('#p-doc-back').src=c.docBack; $$('#preview').classList.remove('hidden');
+    };
+
+    const buildPDF=(c)=>{
+      const { jsPDF }=window.jspdf; const doc=new jsPDF({unit:'pt',format:'a4'});
+      const left=56, top=56, width=483;
+      doc.setFont('Times','Bold'); doc.setFontSize(18); doc.text('PAGARÉ',56,top);
+      doc.setFont('Times','Normal'); doc.setFontSize(10); doc.text(`Número: ${c.numeroPagare} · Ciudad de pago: ${c.ciudadPago}`,56,top+18);
+      doc.setFontSize(12);
+      const body=`Yo, ${c.deudor} identificado con ${c.deudorDoc}, me obligo a pagar incondicionalmente a la orden de ${c.acreedor} la suma de ${numeroALetras(c.monto)} (${currencyCOP(c.monto)}), el día ${new Date(c.fechaVenc).toLocaleDateString('es-CO')} en ${c.ciudadPago}.
+
+Este pagaré se emite sin intereses. En caso de incumplimiento, el acreedor podrá aplicar medidas operativas internas sobre el cupo de crédito (bloqueo temporal, reducción o suspensión) hasta tanto se normalice el pago.`;
+      const split=doc.splitTextToSize(body,width); doc.text(split,left,top+48);
+      let y=top+48+split.length*14+20;
+      doc.setFont('Times','Bold'); doc.text('Partes:',left,y); y+=14; doc.setFont('Times','Normal');
+      doc.text(`Deudor: ${c.deudor} · Doc: ${c.deudorDoc}`,left,y); y+=14; if(c.deudorDir){ doc.text(`Dirección: ${c.deudorDir}`,left,y); y+=14; }
+      const contacto=[c.deudorTel,c.deudorEmail].filter(Boolean).join(' · '); if(contacto){ doc.text(`Contacto: ${contacto}`,left,y); y+=14; }
+      doc.text(`Acreedor: ${c.acreedor}${c.acreedorDoc?' · Doc: '+c.acreedorDoc:''}`,left,y); y+=20;
+      doc.setFont('Times','Bold'); doc.text('Aceptaciones:',left,y); y+=14; doc.setFont('Times','Normal');
+      ['Sin intereses. En caso de incumplimiento se aplican medidas operativas internas (bloqueo de crédito / reducción de cupo).','Autorizo tratamiento de datos e imágenes (Ley 1581 de 2012).',`Declaro conocer y aceptar las políticas de crédito de ${c.acreedor}.`].forEach(b=>{ const parts=doc.splitTextToSize('• '+b,width); doc.text(parts,left,y); y+=parts.length*14; });
+
+      y+=24; doc.text('Firma del deudor:',left,y); y+=8; const img=canvas.toDataURL('image/png'); doc.addImage(img,'PNG',left,y,180,60); y+=72; doc.setFontSize(10); doc.text(`Firmado electrónicamente en ${new Date(c.fechaEmision).toLocaleDateString('es-CO')}`,left,y);
+
+      y+=24; doc.setFont('Times','Bold'); doc.text('Anexos de verificación', left, y); y+=12; doc.setFont('Times','Normal');
+      const w=160,h=120; doc.text('Selfie:',left,y+12); if(c.selfie) doc.addImage(c.selfie,'JPEG',left,y+20,w,h);
+      const col2=left+w+24; doc.text('Documento (frente):',col2,y+12); if(c.docFront) doc.addImage(c.docFront,'JPEG',col2,y+20,w,h);
+      const col3=left+2*(w+24); doc.text('Documento (reverso):',col3,y+12); if(c.docBack) doc.addImage(c.docBack,'JPEG',col3,y+20,w,h);
+
+      const dataUrl=doc.output('dataurlstring'); const fileName=`${c.numeroPagare}_Pagare_${c.deudor.replaceAll(' ','_')}.pdf`; doc.save(fileName); return { dataUrl, fileName };
+    };
+
+    const sendEmail= async (c, dataUrl, fileName)=>{
+      if(!$$('chkAutoEmail').checked) return;
+      try{
+        $$('#msg').textContent='Enviando PDF al deudor y a galleaprobaciones…';
+        const pdfBase64=dataUrl.split(',')[1];
+        const toEmails=[c.deudorEmail, 'galleaprobaciones@gmail.com'].filter(Boolean);
+        const resp=await fetch('/api/send-pdf', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ pdfBase64, filename:fileName, toEmails, metadata:{ numeroPagare:c.numeroPagare, deudor:c.deudor, deudorDoc:c.deudorDoc, fechaEmision:c.fechaEmision, fechaVenc:c.fechaVenc, ciudadPago:c.ciudadPago, monto:c.monto } }) });
+        if(!resp.ok) throw new Error('HTTP '+resp.status);
+        $$('#msg').textContent='PDF enviado ✅';
+      } catch(err){ console.error(err); $$('#msg').textContent='No se pudo enviar el correo (revisa /api/send-pdf).'; }
+    };
+
+    $$('#btnPreview').addEventListener('click', ()=>{ const c=validar(); if(!c) return; fillPreview(c); $$('#msg').textContent='Previsualización lista'; });
+    $$('#btnPDF').addEventListener('click', async ()=>{ const c=validar(); if(!c) return; fillPreview(c); const {dataUrl,fileName}=buildPDF(c); await sendEmail(c,dataUrl,fileName); });
+    $$('#btnGuardar').addEventListener('click', ()=>{ const campos=['acreedor','acreedorDoc','ciudadPago','deudor','deudorDoc','deudorTel','deudorEmail','deudorDir','monto','fechaEmision','fechaVenc','numeroPagare']; const data={}; campos.forEach(id=> data[id]=$$('#'+id).value); localStorage.setItem('pagareDraft', JSON.stringify(data)); $$('#msg').textContent='Borrador guardado (este navegador)'; });
+  </script>
+</body>
+</html>
