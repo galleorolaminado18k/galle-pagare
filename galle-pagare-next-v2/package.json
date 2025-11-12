@@ -1,5 +1,5 @@
 {
-  "name": "galle-pagare",
+  "name": "galle-pagare-wizard-v2",
   "private": true,
   "scripts": {
     "dev": "next dev",
